@@ -1,0 +1,27 @@
+plugins {
+    id 'com.diffplug.spotless' version '6.25.0' apply false
+}
+
+allprojects {
+    group = 'com.github.ndanhkhoi'
+    version = '0.1.0-SNAPSHOT'
+}
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'com.diffplug.spotless'
+
+    spotless {
+        java {
+            palantirJavaFormat()
+        }
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+    }
+
+    repositories {
+        mavenCentral()
+    }
+}

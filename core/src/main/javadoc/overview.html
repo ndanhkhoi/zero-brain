@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ZeroAgent Framework Overview</title>
+</head>
+<body>
+    <h1>ZeroAgent Framework</h1>
+
+    <p>
+        ZeroAgent is a modular Java 17+ framework for building agentic workflows using the OpenAI Chat Completions API.
+        It provides a simple yet powerful abstraction layer for creating AI agents that can use tools, load skills from YAML,
+        maintain memory across sessions, and execute complex reasoning loops.
+    </p>
+
+    <h2>Core Concepts</h2>
+
+    <h3>Agent</h3>
+    <p>
+        An Agent is the main orchestrator that manages conversations with the LLM. It handles the reasoning loop,
+        executes tool calls, and maintains context across iterations. The {@link com.github.ndanhkhoi.zeroagent.agent.AgentLoop}
+        is the heart of the framework, coordinating between the LLM, tools, and skills.
+    </p>
+
+    <h3>Tool</h3>
+    <p>
+        Tools are functions that the agent can call to perform actions or retrieve information. They are defined
+        using the {@link com.github.ndanhkhoi.zeroagent.tool.Tool} interface and automatically converted to OpenAI
+        function schemas. The {@link com.github.ndanhkhoi.zeroagent.tool.ToolRouter} manages tool registration and
+        dispatches LLM function calls to the appropriate Java implementations.
+    </p>
+
+    <h3>Skill</h3>
+    <p>
+        Skills are reusable prompt templates defined in YAML format that can be dynamically loaded and injected
+        into the agent's system prompt. The {@link com.github.ndanhkhoi.zeroagent.skill.SkillLoader} handles parsing,
+        caching, and managing skills across sessions.
+    </p>
+
+    <h3>Memory</h3>
+    <p>
+        Memory provides persistence for agent conversations and state. The {@link com.github.ndanhkhoi.zeroagent.memory.Memory}
+        interface defines the storage abstraction, with {@link com.github.ndanhkhoi.zeroagent.memory.InMemoryStore}
+        providing a default in-memory implementation.
+    </p>
+
+    <h2>Getting Started</h2>
+
+    <h3>Basic Usage</h3>
+    <pre><code>
+// Create an LLM client
+LlmClient llmClient = new OpenAiChatClient(apiKey);
+
+// Create tools for the agent
+List&lt;Tool&gt; tools = List.of(
+    new CurrentTimeTool(),
+    new JavaScriptTool()
+);
+ToolRouter toolRouter = new ToolRouter(tools);
+
+// Configure the agent
+AgentConfig config = new AgentConfig(
+    "gpt-4o-mini",           // model
+    0.7,                     // temperature
+    10,                      // max iterations
+    "You are a helpful assistant that can use tools and write code."
+);
+
+// Create and run the agent
+AgentLoop loop = new AgentLoop(llmClient, toolRouter, config);
+AgentResponse response = loop.run("What time is it? Write a Python function to calculate fibonacci numbers.");
+    </code></pre>
+
+    <h3>Using Skills</h3>
+    <pre><code>
+// Load skills from YAML
+SkillLoader skillLoader = new SkillLoader();
+Map&lt;String, Skill&gt; skills = skillLoader.loadSkills("skills/");
+
+// Inject skills into agent system prompt
+String systemPrompt = skillLoader.injectSkills(config.systemPrompt(), skills);
+
+AgentConfig configWithSkills = new AgentConfig(
+    "gpt-4o-mini",
+    0.7,
+    10,
+    systemPrompt  // Enhanced with skills
+);
+    </code></pre>
+
+    <h3>Memory Management</h3>
+    <pre><code>
+// Create a memory store
+MemoryStore memoryStore = new InMemoryStore();
+
+// Store conversation history
+String sessionId = "user-session-123";
+memoryStore.store(sessionId, userMessage, agentResponse);
+
+// Retrieve conversation history
+List&lt;Message&gt; history = memoryStore.retrieve(sessionId);
+
+// Use in agent for context-aware conversations
+AgentLoop loop = new AgentLoop(llmClient, toolRouter, config, memoryStore, sessionId);
+    </code></pre>
+
+    <h2>Architecture</h2>
+
+    <p>
+        ZeroAgent follows a modular architecture with clear separation of concerns:
+    </p>
+
+    <ul>
+        <li>
+            <b>Agent Layer</b>: {@link com.github.ndanhkhoi.zeroagent.agent} - Orchestrates the reasoning loop and manages LLM interactions
+        </li>
+        <li>
+            <b>Tool Layer</b>: {@link com.github.ndanhkhoi.zeroagent.tool} - Provides extensible function calling capabilities
+        </li>
+        <li>
+            <b>Skill Layer</b>: {@link com.github.ndanhkhoi.zeroagent.skill} - Enables dynamic prompt template management
+        </li>
+        <li>
+            <b>LLM Layer</b>: {@link com.github.ndanhkhoi.zeroagent.llm} - Abstracts LLM client interactions
+        </li>
+        <li>
+            <b>Memory Layer</b>: {@link com.github.ndanhkhoi.zeroagent.memory} - Handles conversation persistence
+        </li>
+        <li>
+            <b>Concurrency Layer</b>: {@link com.github.ndanhkhoi.zeroagent.concurrent} - Provides session-based locking for thread safety
+        </li>
+    </ul>
+
+    <h2>Thread Safety</h2>
+
+    <p>
+        ZeroAgent provides thread safety guarantees through session-based locking:
+    </p>
+
+    <ul>
+        <li>{@link com.github.ndanhkhoi.zeroagent.concurrent.SessionLockManager} - Interface for session lock management</li>
+        <li>{@link com.github.ndanhkhoi.zeroagent.concurrent.PerSessionLockManager} - Default implementation using per-session locks</li>
+    </ul>
+
+    <p>
+        Each agent session is guaranteed to process messages sequentially, even when multiple requests arrive concurrently
+        for the same session. Different sessions can process messages in parallel.
+    </p>
+
+    <h2>Requirements and Dependencies</h2>
+
+    <ul>
+        <li>Java 17 or higher</li>
+        <li>OpenAI API key</li>
+        <li>Gradle for building</li>
+    </ul>
+
+    <h2>Building</h2>
+
+    <pre><code>
+./gradlew build              # Build the project
+./gradlew javadoc            # Generate Javadoc
+./gradlew test               # Run tests
+    </code></pre>
+
+    <h2>See Also</h2>
+
+    <ul>
+        <li><a href="https://platform.openai.com/docs/api-reference/chat">OpenAI Chat Completions API</a></li>
+        <li><a href="https://github.com/openai/openai-java">OpenAI Java SDK</a></li>
+    </ul>
+
+    <h2>Version</h2>
+
+    <p>Current version: 0.1.0-SNAPSHOT</p>
+
+    <h2>License</h2>
+
+    <p>See LICENSE file for details</p>
+</body>
+</html>

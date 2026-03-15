@@ -1,0 +1,47 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+dependencies {
+    api 'com.openai:openai-java:4.26.0'
+    api 'org.slf4j:slf4j-api:2.0.16'     // Logging facade only — no implementation!
+    api 'com.vladsch.flexmark:flexmark:0.64.8'  // Markdown parsing
+    api 'com.vladsch.flexmark:flexmark-ext-yaml-front-matter:0.64.8'  // YAML frontmatter extension
+    implementation 'org.mozilla:rhino:1.9.1' // Core Rhino classes for Sandbox
+    runtimeOnly 'org.mozilla:rhino-engine:1.9.1' // JavaScript engine for Java 15+
+}
+tasks.withType(Javadoc).configureEach {
+    title = 'ZeroAgent API'
+    options.encoding = 'UTF-8'
+
+    // Enable all javadoc checks
+    options.addStringOption('Xdoclint:all', '-quiet')
+
+    // Treat warnings as errors in CI (can be disabled locally with -x javadoc)
+    if (System.getenv('CI') != null) {
+        options.addStringOption('Xwerror', '-quiet')
+    }
+
+    // Include overview file
+    options.overview = rootProject.file('core/src/main/javadoc/overview.html')
+
+    // Link to external APIs
+    options.links.addAll([
+        'https://docs.oracle.com/en/java/javase/17/docs/api/'
+    ])
+
+    // Show source code in javadoc
+    options.addBooleanOption('linksource', true)
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId = 'com.github.ndanhkhoi'
+            artifactId = 'zero-agent-core'
+            version = '0.1.0-SNAPSHOT'
+        }
+    }
+}

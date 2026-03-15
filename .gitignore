@@ -1,0 +1,42 @@
+# Build and Release Folders
+build/
+bin/
+out/
+.gradle/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Mac OS
+.DS_Store
+
+# Temporary Files
+*.class
+*.log
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# STS pre-compiled JSPs
+.springBeans
+
+# ZeroBrain Specifics
+docs/superpowers/specs/
+/tmp/
+.logs/
+/plan/

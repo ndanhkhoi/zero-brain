@@ -1,0 +1,6 @@
+apply plugin: 'application'
+mainClassName = 'com.github.ndanhkhoi.zeroagent.demo.DemoApp'
+dependencies {
+    implementation project(':core')
+    runtimeOnly 'ch.qos.logback:logback-classic:1.5.16'  // Consumer chọn logging impl
+}
