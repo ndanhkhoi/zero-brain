@@ -6,7 +6,7 @@ ZeroAgent allows complete customization over memory structure, multi-modal Visio
 
 ## 🧠 Custom Memory Engines
 
-ZeroAgent tracks conversations per `sessionId`. By default, it uses `InMemoryStore` which trims messages once the context history reaches a 100-message boundary.
+ZeroAgent tracks conversations per `sessionId`. By default, it uses `InMemoryStore`.
 
 If you are deploying ZeroAgent in a distributed environment (Spring Boot, K8s, NodeJS lambda wrappers, etc.), your sessions need persistent storage like PostgreSQL, MongoDB, or Redis.
 
